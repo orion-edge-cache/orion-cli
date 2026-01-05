@@ -12,6 +12,8 @@ export const tailKinesisStream = async () => {
   process.on("SIGINT", handleInterrupt);
 
   try {
+    // Note: We don't show spinner here as this is a stream operation
+    // and the user expects immediate tail output
     const output = unwrapTerraformOutput(getTerraformOutputs());
     const kinesisStreamName = output.kinesis_stream?.name;
 

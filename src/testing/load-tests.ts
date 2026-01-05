@@ -131,7 +131,16 @@ export async function runLoadTest(): Promise<void> {
   let endpoint: string;
 
   try {
-    const output = unwrapTerraformOutput(getTerraformOutputs());
+    let s: ReturnType<typeof spinner> | undefined;
+    const output = unwrapTerraformOutput(
+      getTerraformOutputs(() => {
+        s = spinner();
+        s.start("Initializing Terraform...");
+      })
+    );
+    if (s) {
+      s.stop("Terraform initialized");
+    }
     endpoint = `https://${output.cdn_service.domain_name}/graphql`;
   } catch {
     log.error("Failed to get endpoint. Is infrastructure deployed?");

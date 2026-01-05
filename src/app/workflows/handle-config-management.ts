@@ -57,11 +57,15 @@ export const handleConfigManagement = async () => {
         }
       } else {
         displayHeader("Config › Deploy");
-        const s = spinner();
+        let s = spinner();
         s.start("Deploying config changes");
-        const terraformOutput = unwrapTerraformOutput(getTerraformOutputs());
+        const terraformOutput = unwrapTerraformOutput(
+          getTerraformOutputs(() => {
+            s.message("Initializing Terraform...");
+          })
+        );
         deployConfigChanges(terraformOutput);
-        s.stop("✓ Config changes deployed");
+        s.stop("Config changes deployed");
         const back = (await select({
           message: "Return to Menu",
           options: [{ value: "back", label: "Enter" }],

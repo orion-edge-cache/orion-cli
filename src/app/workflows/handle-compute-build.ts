@@ -1,7 +1,15 @@
 import { getTerraformOutputs, processComputeTemplates, buildCompute } from "@orion/infra";
+import { spinner } from "@clack/prompts";
 
 export const handleComputeBuild = () => {
-  const output = getTerraformOutputs();
+  let s: ReturnType<typeof spinner> | undefined;
+  const output = getTerraformOutputs(() => {
+    s = spinner();
+    s.start("Initializing Terraform...");
+  });
+  if (s) {
+    s.stop("Terraform initialized");
+  }
   processComputeTemplates(output);
   buildCompute();
   console.log();

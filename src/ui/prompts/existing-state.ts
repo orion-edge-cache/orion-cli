@@ -1,18 +1,21 @@
-import { isCancel, select } from "@clack/prompts";
+import { isCancel, select, spinner } from "@clack/prompts";
 import { displayHeader } from "../display";
-import { checkTfStateExists, getTerraformOutputs } from "@orion/infra";
+import { getTerraformOutputs } from "@orion/infra";
 import { unwrapTerraformOutput } from "../../shared";
 
 export const askExistingState = async () => {
   displayHeader("Cache Menu");
-  if (checkTfStateExists()) {
-    try {
-      const output = unwrapTerraformOutput(getTerraformOutputs());
-      const cdnDomain = output.cdn_service.domain_name;
-      console.log(`\nCurrent Cache URL: https://${cdnDomain}/graphql\n`);
-    } catch (error) {
-      // Silently fail if unable to get output
-    }
+  try {
+    let s: ReturnType<typeof spinner> | undefined;
+    const output = unwrapTerraformOutput(
+      getTerraformOutputs(() => {
+        console.log("Initializing Terraform...");
+      }),
+    );
+    const cdnDomain = output.cdn_service.domain_name;
+    console.log(`\nCurrent Cache URL: https://${cdnDomain}/graphql\n`);
+  } catch (error) {
+    // Silently fail if unable to get output
   }
   const choice = (await select({
     message: "Terraform state file exists. What would you like to do?",

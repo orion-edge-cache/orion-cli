@@ -463,7 +463,16 @@ export async function runCacheTests(): Promise<void> {
   let computeEndpoint: string;
 
   try {
-    const output = unwrapTerraformOutput(getTerraformOutputs());
+    let s: ReturnType<typeof spinner> | undefined;
+    const output = unwrapTerraformOutput(
+      getTerraformOutputs(() => {
+        s = spinner();
+        s.start("Initializing Terraform...");
+      })
+    );
+    if (s) {
+      s.stop("Terraform initialized");
+    }
     endpoint = `https://${output.cdn_service.domain_name}/graphql`;
     computeEndpoint = `https://${output.compute_service.domain_name}/graphql`;
   } catch {

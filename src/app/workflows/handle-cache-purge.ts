@@ -4,8 +4,12 @@ import { displayHeader } from "../../ui/display";
 import { getTerraformOutputs } from "@orion/infra";
 import { unwrapTerraformOutput } from "../../shared";
 
-const purgeCDNCache = () => {
-  const output = unwrapTerraformOutput(getTerraformOutputs());
+const purgeCDNCache = (s: ReturnType<typeof spinner>) => {
+  const output = unwrapTerraformOutput(
+    getTerraformOutputs(() => {
+      s.message("Initializing Terraform...");
+    })
+  );
   const cdnServiceId = output.cdn_service.id;
   const fastlyToken = process.env.FASTLY_API_KEY || process.env.FASTLY_API_TOKEN;
 
@@ -13,6 +17,7 @@ const purgeCDNCache = () => {
     throw new Error("FASTLY_API_KEY or FASTLY_API_TOKEN environment variable is required");
   }
 
+  s.message("Purging CDN cache...");
   execSync(
     `curl -X POST "https://api.fastly.com/service/${cdnServiceId}/purge_all" -H "Fastly-Key: ${fastlyToken}"`,
     { stdio: "pipe" }
@@ -29,7 +34,7 @@ export const handleCachePurge = async () => {
     displayHeader("Purge Cache");
     const s = spinner();
     s.start("Purging CDN cache");
-    purgeCDNCache();
+    purgeCDNCache(s);
     s.stop("Cache purged successfully");
     const back = (await select({
       message: "Return to Menu",

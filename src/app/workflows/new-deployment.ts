@@ -70,7 +70,13 @@ export const handleNewState = async (): Promise<boolean> => {
   }
 
   // 5. Get outputs and display
-  const rawOutput = getTerraformOutputs();
+  let s = spinner();
+  const rawOutput = getTerraformOutputs(() => {
+    s.start("Initializing Terraform...");
+  });
+  if (s) {
+    s.stop("Terraform initialized");
+  }
   const output = unwrapTerraformOutput(rawOutput);
 
   // 6. Show completion menu
