@@ -1,15 +1,15 @@
 import { isCancel, select, spinner } from "@clack/prompts";
-import { askConfigMenu } from "../../ui/prompts";
-import { displayHeader } from "../../ui/display";
+import { askConfigMenu } from "../ui/prompts";
+import { displayHeader } from "../ui/display";
 import {
   ensureConfigExists,
   readConfig,
   editConfigInEditor,
   hasConfigChanged,
   deployConfigChanges,
-} from "../../config";
+} from "../config";
 import { getTerraformOutputs } from "@orion/infra";
-import { unwrapTerraformOutput } from "../../shared";
+import { unwrapTerraformOutput } from "../shared";
 
 export const handleConfigManagement = async () => {
   ensureConfigExists();

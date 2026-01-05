@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { runSetupWorkflow } from "./src/app/workflows";
+import { runSetupWorkflow } from "./src/workflows";
 
 const main = async () => {
   await runSetupWorkflow();

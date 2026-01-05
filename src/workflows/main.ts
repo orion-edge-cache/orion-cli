@@ -3,11 +3,10 @@ import {
   askInitialAction,
   askReadmeAction,
   promptForDestroyCredentials,
-} from "../../ui/prompts";
-import { displayReadme, displayLogo } from "../../ui/display";
+} from "../ui/prompts";
+import { displayReadme, displayLogo } from "../ui/display";
 import { destroyInfrastructure, checkTfStateExists } from "@orion/infra";
-import { handleExistingState } from "./existing-deployment";
-import { handleNewState } from "./new-deployment";
+import { handleExistingDeployment, handleNewDeployment } from "./deployment";
 
 export const runSetupWorkflow = async (): Promise<void> => {
   let continueLoop = true;
@@ -40,11 +39,11 @@ export const runSetupWorkflow = async (): Promise<void> => {
         }
       }
 
-      await handleNewState();
+      await handleNewDeployment();
     }
 
     if (initialAction === "view") {
-      await handleExistingState();
+      await handleExistingDeployment();
     }
 
     if (initialAction === "readme") {
