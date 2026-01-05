@@ -1,0 +1,36 @@
+{
+  "name": "@orion/cli",
+  "version": "1.0.0",
+  "description": "Command-line interface for Orion GraphQL Edge Cache",
+  "license": "ISC",
+  "author": "Preston Macy",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "orion": "dist/index.js"
+  },
+  "scripts": {
+    "start": "tsx index.ts",
+    "build": "tsc",
+    "cli:bundle": "ncc build index.ts -o dist --minify --v8-cache"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "@vercel/ncc": "^0.38.4",
+    "pkg": "^5.8.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.11.0",
+    "@orion/infra": "github:orion-edge-cache/orion-infra#main",
+    "chalk": "^5.6.2",
+    "configstore": "^7.1.0",
+    "dotenv": "^17.2.3"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
+}
