@@ -12,7 +12,8 @@
   "scripts": {
     "start": "tsx index.ts",
     "build": "tsc",
-    "cli:bundle": "ncc build index.ts -o dist --minify --v8-cache"
+    "cli:bundle": "ncc build index.ts -o dist --minify --v8-cache",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
