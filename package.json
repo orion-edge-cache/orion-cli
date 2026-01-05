@@ -12,7 +12,8 @@
   "scripts": {
     "start": "tsx index.ts",
     "build": "tsc",
-    "cli:bundle": "ncc build index.ts -o dist --minify --v8-cache"
+    "cli:bundle": "ncc build index.ts -o dist --minify --v8-cache",
+    "prepare": "npm run build"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
@@ -22,8 +23,9 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@aws-sdk/client-sts": "^3.954.0",
     "@clack/prompts": "^0.11.0",
-    "@orion/infra": "github:orion-edge-cache/orion-infra#main",
+    "@orion/infra": "file:../orion-infra",
     "chalk": "^5.6.2",
     "configstore": "^7.1.0",
     "dotenv": "^17.2.3"

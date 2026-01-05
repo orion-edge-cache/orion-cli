@@ -8,7 +8,8 @@ import {
   hasConfigChanged,
   deployConfigChanges,
 } from "../../config";
-import { getTerraformOutput } from "@orion/infra";
+import { getTerraformOutputs } from "@orion/infra";
+import { unwrapTerraformOutput } from "../../shared";
 
 export const handleConfigManagement = async () => {
   ensureConfigExists();
@@ -58,7 +59,7 @@ export const handleConfigManagement = async () => {
         displayHeader("Config › Deploy");
         const s = spinner();
         s.start("Deploying config changes");
-        const terraformOutput = getTerraformOutput();
+        const terraformOutput = unwrapTerraformOutput(getTerraformOutputs());
         deployConfigChanges(terraformOutput);
         s.stop("✓ Config changes deployed");
         const back = (await select({

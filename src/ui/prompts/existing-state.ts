@@ -1,12 +1,13 @@
 import { isCancel, select } from "@clack/prompts";
 import { displayHeader } from "../display";
-import { checkTfStateExists, getTerraformOutput } from "@orion/infra";
+import { checkTfStateExists, getTerraformOutputs } from "@orion/infra";
+import { unwrapTerraformOutput } from "../../shared";
 
 export const askExistingState = async () => {
   displayHeader("Cache Menu");
   if (checkTfStateExists()) {
     try {
-      const output = getTerraformOutput();
+      const output = unwrapTerraformOutput(getTerraformOutputs());
       const cdnDomain = output.cdn_service.domain_name;
       console.log(`\nCurrent Cache URL: https://${cdnDomain}/graphql\n`);
     } catch (error) {

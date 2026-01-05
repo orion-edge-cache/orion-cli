@@ -1,6 +1,6 @@
-import type { TerraformOutput } from "../../shared";
+import type { UnwrappedTerraformOutput } from "../../shared";
 
-export const displayOutput = (output: TerraformOutput) => {
+export const displayOutput = (output: UnwrappedTerraformOutput) => {
   const compute: Array<[string, string]> = [];
   const cdn: Array<[string, string]> = [];
   const configstore: Array<[string, string]> = [];

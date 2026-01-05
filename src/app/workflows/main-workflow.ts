@@ -1,11 +1,11 @@
 import { spinner, log } from "@clack/prompts";
-import { askInitialAction, askReadmeAction } from "../../ui/prompts";
-import { displayReadme, displayLogo } from "../../ui/display";
 import {
-  destroyTerraform,
-  deleteTfState,
-  checkTfStateExists,
-} from "@orion/infra";
+  askInitialAction,
+  askReadmeAction,
+  promptForDestroyCredentials,
+} from "../../ui/prompts";
+import { displayReadme, displayLogo } from "../../ui/display";
+import { destroyInfrastructure, checkTfStateExists } from "@orion/infra";
 import { handleExistingState } from "./existing-deployment";
 import { handleNewState } from "./new-deployment";
 
@@ -19,17 +19,27 @@ export const runSetupWorkflow = async (): Promise<void> => {
     }
 
     if (initialAction === "create") {
+      // Destroy existing infrastructure first if it exists
       if (checkTfStateExists()) {
-        const resources = destroyTerraform();
+        log.warn(
+          "Existing infrastructure detected. It must be destroyed first."
+        );
 
-        resources.forEach((resource: string) => {
-          const s = spinner();
-          s.start(`Destroying ${resource}`);
-          s.stop(`✓ ${resource} destroyed`);
-        });
-        deleteTfState();
-        log.success("✓ Old cache infrastructure destroyed");
+        const destroyConfig = await promptForDestroyCredentials();
+        if (!destroyConfig) continue; // User cancelled, return to menu
+
+        const s = spinner();
+        try {
+          s.start("Destroying existing infrastructure...");
+          await destroyInfrastructure(destroyConfig);
+          s.stop("Old cache infrastructure destroyed");
+        } catch (error) {
+          s.stop("Failed to destroy existing infrastructure");
+          log.error((error as Error).message);
+          continue; // Return to menu
+        }
       }
+
       await handleNewState();
     }
 

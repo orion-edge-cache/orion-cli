@@ -5,7 +5,10 @@ export interface Domain {
   hostOverride: string;
 }
 
-export interface TerraformOutput {
+// Unwrapped TerraformOutput for easier CLI use
+// The raw terraform output JSON wraps each value in { value: ... }
+// This interface represents the unwrapped version for display and logic
+export interface UnwrappedTerraformOutput {
   instance_id: string;
   compute_service: {
     domain_name: string;
@@ -30,8 +33,8 @@ export interface TerraformOutput {
     id: string;
   };
   kinesis_stream: {
-    arn: string;
     name: string;
+    arn: string;
   };
   s3_bucket: {
     arn: string;

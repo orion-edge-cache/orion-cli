@@ -1,9 +1,9 @@
 import { execSync } from "child_process";
-import type { TerraformOutput } from "../shared";
+import type { UnwrappedTerraformOutput } from "../shared";
 import { readConfig } from "./file-manager";
 import { updateConfigHash } from "./change-detection";
 
-export const deployConfigChanges = (terraformOutput: TerraformOutput) => {
+export const deployConfigChanges = (terraformOutput: UnwrappedTerraformOutput) => {
   try {
     const configStore = terraformOutput.configstore;
     const config = JSON.parse(readConfig());

@@ -6,7 +6,8 @@
  */
 
 import { spinner, log, text, isCancel } from "@clack/prompts";
-import { getTerraformOutput } from "@orion/infra";
+import { getTerraformOutputs } from "@orion/infra";
+import { unwrapTerraformOutput } from "../shared";
 
 interface RequestResult {
   type: string;
@@ -130,7 +131,7 @@ export async function runLoadTest(): Promise<void> {
   let endpoint: string;
 
   try {
-    const output = getTerraformOutput();
+    const output = unwrapTerraformOutput(getTerraformOutputs());
     endpoint = `https://${output.cdn_service.domain_name}/graphql`;
   } catch {
     log.error("Failed to get endpoint. Is infrastructure deployed?");

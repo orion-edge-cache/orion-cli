@@ -6,7 +6,8 @@
  */
 
 import { spinner, log } from "@clack/prompts";
-import { getTerraformOutput } from "@orion/infra";
+import { getTerraformOutputs } from "@orion/infra";
+import { unwrapTerraformOutput } from "../shared";
 
 const CONFIG = {
   maxRetries: 10,
@@ -462,7 +463,7 @@ export async function runCacheTests(): Promise<void> {
   let computeEndpoint: string;
 
   try {
-    const output = getTerraformOutput();
+    const output = unwrapTerraformOutput(getTerraformOutputs());
     endpoint = `https://${output.cdn_service.domain_name}/graphql`;
     computeEndpoint = `https://${output.compute_service.domain_name}/graphql`;
   } catch {

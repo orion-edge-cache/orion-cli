@@ -1,5 +1,6 @@
 import { execSync } from "child_process";
-import { getTerraformOutput } from "../terraform";
+import { getTerraformOutputs } from "@orion/infra";
+import { unwrapTerraformOutput } from "../../shared";
 
 export const tailKinesisStream = async () => {
   let shouldStop = false;
@@ -11,7 +12,7 @@ export const tailKinesisStream = async () => {
   process.on("SIGINT", handleInterrupt);
 
   try {
-    const output = getTerraformOutput();
+    const output = unwrapTerraformOutput(getTerraformOutputs());
     const kinesisStreamName = output.kinesis_stream?.name;
 
     if (!kinesisStreamName) {
