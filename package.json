@@ -29,7 +29,7 @@
     "chalk": "^5.6.2",
     "configstore": "^7.1.0",
     "dotenv": "^17.2.3",
-    "@orion/schema": "file:../orion-schema"
+    "@orion/schema": "github:orion-edge-cache/orion-schema#main"
   },
   "files": [
     "dist",
