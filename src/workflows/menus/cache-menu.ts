@@ -5,6 +5,7 @@ import { handlePurgeCache } from "../handlers/cache";
 import { handleComputeBuild, handleComputeDeploy } from "../handlers/compute";
 import { handleViewDetails, handleTailKinesis } from "../handlers/monitoring";
 import { handleCacheTests, handleLoadTest } from "../handlers/testing";
+import { handleSchemaMenu } from "../handlers/schema";
 import { runConfigMenu } from "./config-menu";
 
 export const runCacheMenu = async (): Promise<boolean> => {
@@ -56,6 +57,11 @@ export const runCacheMenu = async (): Promise<boolean> => {
 
     if (choice === "config") {
       await runConfigMenu();
+      continue;
+    }
+
+    if (choice === "schema") {
+      await handleSchemaMenu();
       continue;
     }
 
