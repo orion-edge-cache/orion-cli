@@ -4,9 +4,9 @@ import { displayHeader } from "../ui/display";
 import { getTerraformOutputs } from "@orion/infra";
 import { unwrapTerraformOutput } from "../shared";
 
-const purgeCDNCache = (s: ReturnType<typeof spinner>) => {
+const purgeCDNCache = async (s: ReturnType<typeof spinner>) => {
   const output = unwrapTerraformOutput(
-    getTerraformOutputs(() => {
+    await getTerraformOutputs(() => {
       s.message("Initializing Terraform...");
     })
   );
@@ -34,7 +34,7 @@ export const handleCachePurge = async () => {
     displayHeader("Purge Cache");
     const s = spinner();
     s.start("Purging CDN cache");
-    purgeCDNCache(s);
+    await purgeCDNCache(s);
     s.stop("Cache purged successfully");
     const back = (await select({
       message: "Return to Menu",

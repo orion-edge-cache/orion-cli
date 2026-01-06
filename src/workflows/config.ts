@@ -60,7 +60,7 @@ export const handleConfigManagement = async () => {
         let s = spinner();
         s.start("Deploying config changes");
         const terraformOutput = unwrapTerraformOutput(
-          getTerraformOutputs(() => {
+          await getTerraformOutputs(() => {
             s.message("Initializing Terraform...");
           })
         );

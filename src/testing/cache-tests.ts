@@ -189,7 +189,7 @@ export async function runCacheTests(): Promise<void> {
   try {
     let s: ReturnType<typeof spinner> | undefined;
     const output = unwrapTerraformOutput(
-      getTerraformOutputs(() => {
+      await getTerraformOutputs(() => {
         s = spinner();
         s.start("Initializing Terraform...");
       })

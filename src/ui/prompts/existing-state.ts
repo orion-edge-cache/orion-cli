@@ -8,7 +8,7 @@ export const askExistingState = async () => {
   try {
     let s: ReturnType<typeof spinner> | undefined;
     const output = unwrapTerraformOutput(
-      getTerraformOutputs(() => {
+      await getTerraformOutputs(() => {
         console.log("Initializing Terraform...");
       }),
     );

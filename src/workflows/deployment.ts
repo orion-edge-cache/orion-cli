@@ -90,8 +90,9 @@ export const handleNewDeployment = async (): Promise<boolean> => {
   }
 
   // 5. Get outputs and display
-  let s = spinner();
-  const rawOutput = getTerraformOutputs(() => {
+  let s: ReturnType<typeof spinner> | undefined;
+  const rawOutput = await getTerraformOutputs(() => {
+    s = spinner();
     s.start("Initializing Terraform...");
   });
   if (s) {
@@ -146,12 +147,12 @@ export const handleExistingDeployment = async (): Promise<boolean> => {
     }
 
     if (choice === "build") {
-      handleComputeBuild();
+      await handleComputeBuild();
       continue;
     }
 
     if (choice === "deploy") {
-      handleComputeDeploy();
+      await handleComputeDeploy();
       continue;
     }
 

@@ -14,7 +14,7 @@ export const tailKinesisStream = async () => {
   try {
     // Note: We don't show spinner here as this is a stream operation
     // and the user expects immediate tail output
-    const output = unwrapTerraformOutput(getTerraformOutputs());
+    const output = unwrapTerraformOutput(await getTerraformOutputs());
     const kinesisStreamName = output.kinesis_stream?.name;
 
     if (!kinesisStreamName) {
