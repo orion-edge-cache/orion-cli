@@ -1,9 +1,9 @@
 import "dotenv/config";
 
-import { runSetupWorkflow } from "./src/workflows";
+import { menus } from "./src/workflows";
 
 const main = async () => {
-  await runSetupWorkflow();
+  await menus.runSetupMenu();
 };
 
 main().catch((err) => {

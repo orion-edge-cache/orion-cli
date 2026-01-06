@@ -1,5 +1,5 @@
 import fs from "fs";
-import { spinner, select, isCancel, outro, confirm, log } from "@clack/prompts";
+import { spinner, select, isCancel, confirm, log } from "@clack/prompts";
 import {
   deployInfrastructure,
   destroyInfrastructure,
@@ -13,21 +13,14 @@ import {
   askForDomain,
   showErrorMenu,
   showDetailedLogs,
-  askExistingState,
   promptForDestroyCredentials,
-} from "../ui/prompts";
-import { displayHeader, displayLogo, displayOutput } from "../ui/display";
-import { unwrapTerraformOutput } from "../shared";
-import { ensureConfigExists } from "../config";
+} from "../../ui/prompts";
+import { displayHeader, displayLogo, displayOutput } from "../../ui/display";
+import { unwrapTerraformOutput } from "../../shared";
+import { ensureConfigExists } from "../../config";
+import { runCacheMenu } from "../menus/cache-menu";
 
-// Internal imports from same file
-import { handleCachePurge } from "./cache";
-import { handleComputeBuild, handleComputeDeploy } from "./compute";
-import { handleConfigManagement } from "./config";
-import { handleViewDetails, handleKinesisTail } from "./monitoring";
-import { handleCacheTests, handleLoadTest } from "./testing";
-
-export const handleNewDeployment = async (): Promise<boolean> => {
+export const handleCreateDeployment = async (): Promise<boolean> => {
   // 1. Collect and validate credentials
   const credResult = await promptForCredentials();
   if (!credResult) return false;
@@ -117,78 +110,14 @@ export const handleNewDeployment = async (): Promise<boolean> => {
     })) as string;
 
     if (!isCancel(back)) {
-      return await handleExistingDeployment();
+      return await runCacheMenu();
     }
   }
 
   return true;
 };
 
-export const handleExistingDeployment = async (): Promise<boolean> => {
-  let continueLoop = true;
-  while (continueLoop) {
-    const choice = await askExistingState();
-    if (!choice) break;
-
-    if (choice === "destroy") {
-      continueLoop = await handleDestroy();
-      continue;
-    }
-
-    if (choice === "view") {
-      await handleViewDetails();
-      continue;
-    }
-
-    if (choice === "tail") {
-      await handleKinesisTail();
-      continueLoop = true;
-      continue;
-    }
-
-    if (choice === "build") {
-      await handleComputeBuild();
-      continue;
-    }
-
-    if (choice === "deploy") {
-      await handleComputeDeploy();
-      continue;
-    }
-
-    if (choice === "purge") {
-      await handleCachePurge();
-      continue;
-    }
-
-    if (choice === "test") {
-      await handleCacheTests();
-      continue;
-    }
-
-    if (choice === "load-test") {
-      await handleLoadTest();
-      continue;
-    }
-
-    if (choice === "config") {
-      await handleConfigManagement();
-      continue;
-    }
-
-    if (choice === "back") {
-      continueLoop = false;
-    }
-
-    if (choice === "exit") {
-      outro("Goodbye!");
-      process.exit(0);
-    }
-  }
-  return true;
-};
-
-export const handleDestroy = async (): Promise<boolean> => {
+export const handleDestroyDeployment = async (): Promise<boolean> => {
   const confirmDestroy = await confirm({
     message: "Confirm destroy infrastructure?",
   });

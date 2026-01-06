@@ -1,8 +1,8 @@
 import { select, isCancel, spinner } from "@clack/prompts";
-import { displayHeader, displayOutput } from "../ui/display";
+import { displayHeader, displayOutput } from "../../ui/display";
 import { getTerraformOutputs } from "@orion/infra";
-import { unwrapTerraformOutput } from "../shared";
-import { tailKinesisStream } from "../services/aws";
+import { unwrapTerraformOutput } from "../../shared";
+import { tailKinesisStream } from "../../services/aws";
 
 export const handleViewDetails = async () => {
   displayHeader("View Details");
@@ -30,7 +30,7 @@ export const handleViewDetails = async () => {
   }
 };
 
-export const handleKinesisTail = async () => {
+export const handleTailKinesis = async () => {
   process.removeAllListeners("SIGINT");
   const noopHandler = () => {};
   process.on("SIGINT", noopHandler);

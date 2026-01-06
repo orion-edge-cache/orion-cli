@@ -1,8 +1,8 @@
 import { confirm, isCancel, select, spinner } from "@clack/prompts";
 import { execSync } from "child_process";
-import { displayHeader } from "../ui/display";
+import { displayHeader } from "../../ui/display";
 import { getTerraformOutputs } from "@orion/infra";
-import { unwrapTerraformOutput } from "../shared";
+import { unwrapTerraformOutput } from "../../shared";
 
 const purgeCDNCache = async (s: ReturnType<typeof spinner>) => {
   const output = unwrapTerraformOutput(
@@ -24,7 +24,7 @@ const purgeCDNCache = async (s: ReturnType<typeof spinner>) => {
   );
 };
 
-export const handleCachePurge = async () => {
+export const handlePurgeCache = async () => {
   displayHeader("Purge Cache");
   const confirmPurge = await confirm({
     message: "Confirm purge all cache?",

@@ -1,6 +1,6 @@
 import { isCancel, select } from "@clack/prompts";
-import { displayHeader } from "../ui/display";
-import { runCacheTests, runLoadTest } from "../testing";
+import { displayHeader } from "../../ui/display";
+import { runCacheTests, runLoadTest } from "../../testing";
 
 export const handleCacheTests = async () => {
   displayHeader("Cache Tests");
