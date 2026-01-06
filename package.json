@@ -28,7 +28,8 @@
     "@orion/infra": "github:orion-edge-cache/orion-infra#main",
     "chalk": "^5.6.2",
     "configstore": "^7.1.0",
-    "dotenv": "^17.2.3"
+    "dotenv": "^17.2.3",
+    "@orion/schema": "file:../orion-schema"
   },
   "files": [
     "dist",

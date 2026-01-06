@@ -28,7 +28,7 @@ import {
   type AIProviderConfig,
   type ConfigPreferences,
   type OrionCacheConfig,
-} from "../../schema/index.js";
+} from "@orion/schema";
 
 // =============================================================================
 // SCHEMA ANALYSIS HANDLER
