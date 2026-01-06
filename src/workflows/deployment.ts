@@ -1,8 +1,11 @@
-import { spinner, select, isCancel, outro, confirm } from "@clack/prompts";
+import fs from "fs";
+import { spinner, select, isCancel, outro, confirm, log } from "@clack/prompts";
 import {
   deployInfrastructure,
   destroyInfrastructure,
   getTerraformOutputs,
+  ORION_CONFIG_DIR,
+  BACKEND_URL_PATH,
   type DeployConfig,
 } from "@orion/infra";
 import {
@@ -15,6 +18,7 @@ import {
 } from "../ui/prompts";
 import { displayHeader, displayLogo, displayOutput } from "../ui/display";
 import { unwrapTerraformOutput } from "../shared";
+import { ensureConfigExists } from "../config";
 
 // Internal imports from same file
 import { handleCachePurge } from "./cache";
@@ -58,6 +62,13 @@ export const handleNewDeployment = async (): Promise<boolean> => {
 
       s.stop("Infrastructure deployed");
       deployed = true;
+
+      // Save backend URL for console compatibility
+      fs.mkdirSync(ORION_CONFIG_DIR, { recursive: true });
+      fs.writeFileSync(BACKEND_URL_PATH, config.backend.graphqlUrl);
+
+      // Ensure config.json exists with defaults
+      ensureConfigExists();
     } catch (error) {
       s.stop("Deployment failed");
 
@@ -202,6 +213,12 @@ export const handleDestroy = async (): Promise<boolean> => {
 
       s.stop("Infrastructure destroyed");
       destroyed = true;
+
+      // Clean up config directory
+      if (fs.existsSync(ORION_CONFIG_DIR)) {
+        fs.rmSync(ORION_CONFIG_DIR, { recursive: true, force: true });
+        log.info("Cleaned up ~/.config/orion");
+      }
     } catch (error) {
       s.stop("Destroy failed");
 
