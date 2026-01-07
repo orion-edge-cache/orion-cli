@@ -8,6 +8,6 @@ export {
   handleSchemaAnalysis,
   handleAIConfigGeneration,
   handleBasicConfigGeneration,
-} from "./schema";
+} from "./schema/index.js";
 export { handleRunCacheTests, handleGenerateAnalytics } from "./demo-tools";
 export { handleDeployDemoApp, handleDestroyDemoApp } from "./demo-app";

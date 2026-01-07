@@ -1,5 +1,5 @@
 export * from "./config-menu";
-export * from "./credentials-prompt";
+export * from "./credentials/index.js";
 export * from "./demo-tools";
 export * from "./dev-options";
 export * from "./domain-input";
