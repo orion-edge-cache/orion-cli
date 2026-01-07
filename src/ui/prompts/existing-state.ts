@@ -27,11 +27,9 @@ export const askExistingState = async () => {
       { value: "config", label: "5. Config" },
       { value: "schema", label: "6. Schema Analysis & AI Config" },
       { value: "purge", label: "7. Purge All Cache" },
-      { value: "test", label: "8. Run Cache Tests" },
-      { value: "load-test", label: "9. Run Load Test" },
-      { value: "destroy", label: "10. Destroy existing cache" },
-      { value: "back", label: "11. Back to menu" },
-      { value: "exit", label: "12. Exit" },
+      { value: "destroy", label: "8. Destroy existing cache" },
+      { value: "back", label: "9. Back to menu" },
+      { value: "exit", label: "10. Exit" },
     ],
   })) as string;
 

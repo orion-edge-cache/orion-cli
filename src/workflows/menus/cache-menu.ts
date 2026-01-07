@@ -4,7 +4,6 @@ import { handleDestroyDeployment } from "../handlers/deployment";
 import { handlePurgeCache } from "../handlers/cache";
 import { handleComputeBuild, handleComputeDeploy } from "../handlers/compute";
 import { handleViewDetails, handleTailKinesis } from "../handlers/monitoring";
-import { handleCacheTests, handleLoadTest } from "../handlers/testing";
 import { handleSchemaMenu } from "../handlers/schema";
 import { runConfigMenu } from "./config-menu";
 
@@ -42,16 +41,6 @@ export const runCacheMenu = async (): Promise<boolean> => {
 
     if (choice === "purge") {
       await handlePurgeCache();
-      continue;
-    }
-
-    if (choice === "test") {
-      await handleCacheTests();
-      continue;
-    }
-
-    if (choice === "load-test") {
-      await handleLoadTest();
       continue;
     }
 
