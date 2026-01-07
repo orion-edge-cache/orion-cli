@@ -262,7 +262,7 @@ export const handleAIConfigGeneration = async () => {
 
     // Offer to save the key
     const saveKey = await confirm({
-      message: "Save this API key to ~/.config/orion/credentials.json?",
+      message: "Save this API key to ~/.config/orion/deployment-config.json?",
       initialValue: true,
     });
 

@@ -7,6 +7,7 @@ import {
 import { displayReadme, displayLogo } from "../../ui/display";
 import { destroyInfrastructure, checkTfStateExists } from "@orion/infra";
 import { handleCreateDeployment } from "../handlers/deployment";
+import { handleDeployDemoApp } from "../handlers/demo-app";
 import { runCacheMenu } from "./cache-menu";
 import { runDevMenu } from "./dev-menu";
 import { runDemoToolsMenu } from "./demo-tools-menu";
@@ -43,6 +44,12 @@ export const runSetupMenu = async (): Promise<void> => {
       }
 
       await handleCreateDeployment();
+    }
+
+    if (initialAction === "deploy-demo") {
+      await handleDeployDemoApp();
+      // After deploying demo app, return to menu so user can create edge cache
+      continue;
     }
 
     if (initialAction === "view") {

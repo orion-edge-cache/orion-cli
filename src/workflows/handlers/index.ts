@@ -10,3 +10,4 @@ export {
   handleBasicConfigGeneration,
 } from "./schema";
 export { handleRunCacheTests, handleGenerateAnalytics } from "./demo-tools";
+export { handleDeployDemoApp, handleDestroyDemoApp } from "./demo-app";

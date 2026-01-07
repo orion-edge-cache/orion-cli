@@ -9,6 +9,12 @@ import {
   type DeployConfig,
 } from "@orion/infra";
 import {
+  destroyDemoApp,
+  checkDemoAppDeployed,
+  type DemoAppConfig,
+  type ProgressEvent,
+} from "@orion/demo-app";
+import {
   promptForCredentials,
   askForDomain,
   showErrorMenu,
@@ -16,11 +22,51 @@ import {
   promptForDestroyCredentials,
 } from "../../ui/prompts";
 import { displayHeader, displayLogo, displayOutput } from "../../ui/display";
-import { unwrapTerraformOutput } from "../../shared";
+import {
+  unwrapTerraformOutput,
+  checkCLIDependencies,
+  type CLIDependencyStatus,
+} from "../../shared";
 import { ensureConfigExists } from "../../config";
 import { runCacheMenu } from "../menus/cache-menu";
 
+/**
+ * Check CLI dependencies and display results
+ * Returns true if all dependencies are installed, false otherwise
+ */
+async function checkAndDisplayCLIDependencies(): Promise<boolean> {
+  const s = spinner();
+  s.start("Checking CLI dependencies...");
+
+  const status: CLIDependencyStatus = await checkCLIDependencies();
+
+  if (status.allInstalled) {
+    s.stop("CLI dependencies verified");
+    return true;
+  }
+
+  s.stop("Missing CLI dependencies");
+
+  log.error("The following CLI tools are required but not installed:");
+  for (const dep of status.dependencies) {
+    if (!dep.installed) {
+      log.warn(`  - ${dep.name}: ${dep.error}`);
+    }
+  }
+
+  log.info("");
+  log.info("Please install the missing tools:");
+  log.info("  - Fastly CLI: https://developer.fastly.com/reference/cli/");
+  log.info("  - Terraform: https://developer.hashicorp.com/terraform/install");
+
+  return false;
+}
+
 export const handleCreateDeployment = async (): Promise<boolean> => {
+  // 0. Check CLI dependencies first
+  const depsOk = await checkAndDisplayCLIDependencies();
+  if (!depsOk) return false;
+
   // 1. Collect and validate credentials
   const credResult = await promptForCredentials();
   if (!credResult) return false;
@@ -118,8 +164,19 @@ export const handleCreateDeployment = async (): Promise<boolean> => {
 };
 
 export const handleDestroyDeployment = async (): Promise<boolean> => {
+  // Check CLI dependencies first
+  const depsOk = await checkAndDisplayCLIDependencies();
+  if (!depsOk) return false;
+
+  // Check if demo app is also deployed
+  const hasDemoApp = checkDemoAppDeployed();
+
+  const confirmMessage = hasDemoApp
+    ? "Confirm destroy infrastructure? (This will also destroy the demo app)"
+    : "Confirm destroy infrastructure?";
+
   const confirmDestroy = await confirm({
-    message: "Confirm destroy infrastructure?",
+    message: confirmMessage,
   });
 
   if (isCancel(confirmDestroy) || !confirmDestroy) {
@@ -135,6 +192,25 @@ export const handleDestroyDeployment = async (): Promise<boolean> => {
   while (!destroyed) {
     const s = spinner();
     try {
+      // Destroy demo app first if it exists
+      if (hasDemoApp) {
+        s.start("Destroying demo app...");
+        
+        const demoAppConfig: DemoAppConfig = {
+          aws: {
+            accessKeyId: destroyConfig.awsAccessKeyId,
+            secretAccessKey: destroyConfig.awsSecretAccessKey,
+            region: destroyConfig.awsRegion,
+          },
+        };
+        
+        await destroyDemoApp(demoAppConfig, (event: ProgressEvent) => {
+          s.message(`Demo app: ${event.message}`);
+        });
+        
+        s.stop("Demo app destroyed");
+      }
+
       s.start("Destroying infrastructure...");
 
       await destroyInfrastructure(destroyConfig, (event) => {

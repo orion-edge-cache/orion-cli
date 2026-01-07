@@ -1,11 +1,14 @@
 import { log, isCancel, select, confirm } from "@clack/prompts";
 import { displayLogo } from "../display";
 import { checkTfStateExists } from "@orion/infra";
+import { checkDemoAppDeployed } from "@orion/demo-app";
 
 export const askInitialAction = async (): Promise<string | false> => {
   displayLogo();
 
   const hasTfState = checkTfStateExists();
+  const hasDemoApp = checkDemoAppDeployed();
+  
   const options = hasTfState
     ? [
         { value: "view", label: "1. View Current Cache" },
@@ -16,8 +19,9 @@ export const askInitialAction = async (): Promise<string | false> => {
       ]
     : [
         { value: "create", label: "1. Create New Edge Cache" },
-        { value: "readme", label: "2. View Usage Guide" },
-        { value: "exit", label: "3. Exit" },
+        { value: "deploy-demo", label: "2. Deploy Demo App", hint: "Get a GraphQL endpoint to test with" },
+        { value: "readme", label: "3. View Usage Guide" },
+        { value: "exit", label: "4. Exit" },
       ];
 
   let choice = (await select({

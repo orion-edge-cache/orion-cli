@@ -19,7 +19,7 @@ import {
 } from "../../config/credentials-validator";
 
 const ORION_CONFIG_DIR = path.join(os.homedir(), ".config/orion");
-const CREDENTIALS_PATH = path.join(ORION_CONFIG_DIR, "credentials.json");
+const DEPLOYMENT_CONFIG_PATH = path.join(ORION_CONFIG_DIR, "deployment-config.json");
 
 interface SavedCredentials {
   aws?: { accessKeyId: string; secretAccessKey: string; region: string };
@@ -47,8 +47,8 @@ interface CredentialSources {
 
 async function getSavedCredentials(): Promise<SavedCredentials | null> {
   try {
-    if (!existsSync(CREDENTIALS_PATH)) return null;
-    const content = await readFile(CREDENTIALS_PATH, "utf-8");
+    if (!existsSync(DEPLOYMENT_CONFIG_PATH)) return null;
+    const content = await readFile(DEPLOYMENT_CONFIG_PATH, "utf-8");
     return JSON.parse(content);
   } catch {
     return null;
@@ -289,10 +289,10 @@ async function saveCredentials(
   };
 
   await mkdir(ORION_CONFIG_DIR, { recursive: true });
-  await writeFile(CREDENTIALS_PATH, JSON.stringify(credentials, null, 2), {
+  await writeFile(DEPLOYMENT_CONFIG_PATH, JSON.stringify(credentials, null, 2), {
     mode: 0o600,
   });
-  log.success("Credentials saved to ~/.config/orion/credentials.json");
+  log.success("Credentials saved to ~/.config/orion/deployment-config.json");
 }
 
 // ============ Main Export Functions ============
@@ -311,7 +311,7 @@ export async function promptForCredentials(): Promise<{
       options.push({
         value: "saved",
         label: "Use saved credentials",
-        hint: "~/.config/orion/credentials.json",
+        hint: "~/.config/orion/deployment-config.json",
       });
     }
 
@@ -427,7 +427,7 @@ export async function promptForDestroyCredentials(): Promise<DestroyConfig | nul
       options.push({
         value: "saved",
         label: "Use saved credentials",
-        hint: "~/.config/orion/credentials.json",
+        hint: "~/.config/orion/deployment-config.json",
       });
     }
 
