@@ -6,15 +6,19 @@ export const askInitialAction = async (): Promise<string | false> => {
   displayLogo();
 
   const hasTfState = checkTfStateExists();
-  const options = [
-    { value: "create", label: "1. Create New Edge Cache" },
-    ...(hasTfState ? [{ value: "view", label: "2. View Current Cache" }] : []),
-    {
-      value: "readme",
-      label: hasTfState ? "3. View Usage Guide" : "2. View Usage Guide",
-    },
-    { value: "exit", label: hasTfState ? "4. Exit" : "3. Exit" },
-  ];
+  const options = hasTfState
+    ? [
+        { value: "view", label: "1. View Current Cache" },
+        { value: "dev-options", label: "2. Dev Options" },
+        { value: "demo-tools", label: "3. Demo Tools" },
+        { value: "readme", label: "4. View Usage Guide" },
+        { value: "exit", label: "5. Exit" },
+      ]
+    : [
+        { value: "create", label: "1. Create New Edge Cache" },
+        { value: "readme", label: "2. View Usage Guide" },
+        { value: "exit", label: "3. Exit" },
+      ];
 
   let choice = (await select({
     message: "Welcome to Orion - Edge Cache for GraphQL",
@@ -23,19 +27,6 @@ export const askInitialAction = async (): Promise<string | false> => {
 
   if (isCancel(choice)) {
     choice = "exit";
-  }
-
-  if (choice === "create" && hasTfState) {
-    log.warn(
-      "⚠️  Creating a new edge cache will DESTROY your current infrastructure and build a new one!",
-    );
-    const confirmed = (await confirm({
-      message: "Do you want to proceed?",
-    })) as boolean;
-
-    if (isCancel(confirmed) || !confirmed) {
-      return await askInitialAction();
-    }
   }
 
   return choice;

@@ -18,18 +18,14 @@ export const askExistingState = async () => {
     // Silently fail if unable to get output
   }
   const choice = (await select({
-    message: "Terraform state file exists. What would you like to do?",
+    message: "What would you like to do?",
     options: [
-      { value: "view", label: "1. View Details" },
-      { value: "tail", label: "2. Tail Kinesis" },
-      { value: "build", label: "3. Build Fastly Compute" },
-      { value: "deploy", label: "4. Deploy Fastly Compute" },
-      { value: "config", label: "5. Config" },
-      { value: "schema", label: "6. Schema Analysis & AI Config" },
-      { value: "purge", label: "7. Purge All Cache" },
-      { value: "destroy", label: "8. Destroy existing cache" },
-      { value: "back", label: "9. Back to menu" },
-      { value: "exit", label: "10. Exit" },
+      { value: "view", label: "1. Show Details" },
+      { value: "config", label: "2. Config" },
+      { value: "schema", label: "3. Schema Analysis & AI Config" },
+      { value: "purge", label: "4. Purge Cache" },
+      { value: "destroy", label: "5. Destroy Cache" },
+      { value: "exit", label: "6. Exit" },
     ],
   })) as string;
 

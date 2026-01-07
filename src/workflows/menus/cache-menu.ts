@@ -2,8 +2,7 @@ import { outro } from "@clack/prompts";
 import { askExistingState } from "../../ui/prompts";
 import { handleDestroyDeployment } from "../handlers/deployment";
 import { handlePurgeCache } from "../handlers/cache";
-import { handleComputeBuild, handleComputeDeploy } from "../handlers/compute";
-import { handleViewDetails, handleTailKinesis } from "../handlers/monitoring";
+import { handleViewDetails } from "../handlers/monitoring";
 import { handleSchemaMenu } from "../handlers/schema";
 import { runConfigMenu } from "./config-menu";
 
@@ -13,34 +12,8 @@ export const runCacheMenu = async (): Promise<boolean> => {
     const choice = await askExistingState();
     if (!choice) break;
 
-    if (choice === "destroy") {
-      continueLoop = await handleDestroyDeployment();
-      continue;
-    }
-
     if (choice === "view") {
       await handleViewDetails();
-      continue;
-    }
-
-    if (choice === "tail") {
-      await handleTailKinesis();
-      continueLoop = true;
-      continue;
-    }
-
-    if (choice === "build") {
-      await handleComputeBuild();
-      continue;
-    }
-
-    if (choice === "deploy") {
-      await handleComputeDeploy();
-      continue;
-    }
-
-    if (choice === "purge") {
-      await handlePurgeCache();
       continue;
     }
 
@@ -54,8 +27,14 @@ export const runCacheMenu = async (): Promise<boolean> => {
       continue;
     }
 
-    if (choice === "back") {
-      continueLoop = false;
+    if (choice === "purge") {
+      await handlePurgeCache();
+      continue;
+    }
+
+    if (choice === "destroy") {
+      continueLoop = await handleDestroyDeployment();
+      continue;
     }
 
     if (choice === "exit") {

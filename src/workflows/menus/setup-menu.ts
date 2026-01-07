@@ -8,6 +8,8 @@ import { displayReadme, displayLogo } from "../../ui/display";
 import { destroyInfrastructure, checkTfStateExists } from "@orion/infra";
 import { handleCreateDeployment } from "../handlers/deployment";
 import { runCacheMenu } from "./cache-menu";
+import { runDevMenu } from "./dev-menu";
+import { runDemoToolsMenu } from "./demo-tools-menu";
 
 export const runSetupMenu = async (): Promise<void> => {
   let continueLoop = true;
@@ -45,6 +47,14 @@ export const runSetupMenu = async (): Promise<void> => {
 
     if (initialAction === "view") {
       await runCacheMenu();
+    }
+
+    if (initialAction === "dev-options") {
+      await runDevMenu();
+    }
+
+    if (initialAction === "demo-tools") {
+      await runDemoToolsMenu();
     }
 
     if (initialAction === "readme") {

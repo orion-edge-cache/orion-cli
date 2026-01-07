@@ -1,5 +1,7 @@
 export * from "./config-menu";
 export * from "./credentials-prompt";
+export * from "./demo-tools";
+export * from "./dev-options";
 export * from "./domain-input";
 export * from "./error-menu";
 export * from "./existing-state";

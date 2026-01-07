@@ -9,3 +9,4 @@ export {
   handleAIConfigGeneration,
   handleBasicConfigGeneration,
 } from "./schema";
+export { handleRunCacheTests, handleGenerateAnalytics } from "./demo-tools";
