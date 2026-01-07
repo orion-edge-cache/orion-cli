@@ -2,6 +2,7 @@
  * Schema Workflow Handlers
  *
  * Handlers for schema introspection, analysis, and AI-powered config generation.
+ * Uses @orion/schema v2.0.0 with commercial AI providers only.
  */
 
 import {
@@ -12,6 +13,7 @@ import {
   spinner,
   note,
   log,
+  password,
 } from "@clack/prompts";
 import { displayHeader } from "../../ui/display/index.js";
 import { writeConfig } from "../../config/index.js";
@@ -22,9 +24,19 @@ import {
   generateSchemaSummary,
   generateCacheConfig,
   generateBasicConfig,
-  isOllamaAvailable,
-  getOllamaModels,
   PROVIDER_INFO,
+  getSupportedProviders,
+  getDefaultModel,
+  getSavedCredentials,
+  getAIKeyFromCredentials,
+  getAIKeyFromEnv,
+  saveAIKeyToCredentials,
+  validateAPIKey,
+  maskAPIKey,
+  getEnvVarNames,
+  terraformStateExists,
+  getGraphQLEndpointFromTerraform,
+  type AIProvider,
   type AIProviderConfig,
   type ConfigPreferences,
   type OrionCacheConfig,
@@ -37,10 +49,21 @@ import {
 export const handleSchemaAnalysis = async () => {
   displayHeader("Schema > Analyze");
 
+  // Try to get endpoint from terraform state first
+  let defaultEndpoint = "";
+  if (terraformStateExists()) {
+    const tfEndpoint = await getGraphQLEndpointFromTerraform();
+    if (tfEndpoint) {
+      defaultEndpoint = tfEndpoint;
+      log.info(`Found endpoint from terraform state: ${tfEndpoint}`);
+    }
+  }
+
   // Get GraphQL endpoint
   const endpoint = await text({
     message: "Enter your GraphQL endpoint URL:",
-    placeholder: "https://api.example.com/graphql",
+    placeholder: defaultEndpoint || "https://api.example.com/graphql",
+    initialValue: defaultEndpoint,
     validate: (value) => {
       if (!value) return "Endpoint is required";
       try {
@@ -124,10 +147,21 @@ export const handleSchemaAnalysis = async () => {
 export const handleAIConfigGeneration = async () => {
   displayHeader("Schema > Generate Config with AI");
 
+  // Try to get endpoint from terraform state first
+  let defaultEndpoint = "";
+  if (terraformStateExists()) {
+    const tfEndpoint = await getGraphQLEndpointFromTerraform();
+    if (tfEndpoint) {
+      defaultEndpoint = tfEndpoint;
+      log.info(`Found endpoint from terraform state: ${tfEndpoint}`);
+    }
+  }
+
   // Get GraphQL endpoint
   const endpoint = await text({
     message: "Enter your GraphQL endpoint URL:",
-    placeholder: "https://api.example.com/graphql",
+    placeholder: defaultEndpoint || "https://api.example.com/graphql",
+    initialValue: defaultEndpoint,
     validate: (value) => {
       if (!value) return "Endpoint is required";
       try {
@@ -141,120 +175,127 @@ export const handleAIConfigGeneration = async () => {
   if (isCancel(endpoint)) return;
 
   // Select AI provider
+  const providers = getSupportedProviders();
+  const providerOptions = providers.map((p) => {
+    const info = PROVIDER_INFO[p];
+    return {
+      value: p,
+      label: info.name,
+      hint: info.pricing,
+    };
+  });
+
   const providerChoice = await select({
     message: "Select AI provider:",
-    options: [
-      {
-        value: "free",
-        label: "Free Providers (Ollama, Groq, Hugging Face)",
-        hint: "No credit card required",
-      },
-      {
-        value: "paid",
-        label: "Paid Providers (Anthropic, OpenAI)",
-        hint: "Requires API key",
-      },
-    ],
+    options: providerOptions,
   });
 
   if (isCancel(providerChoice)) return;
 
-  let provider: string;
-  let apiKey: string | undefined;
-  let customEndpoint: string | undefined;
+  const provider = providerChoice as AIProvider;
+  const providerInfo = PROVIDER_INFO[provider];
 
-  if (providerChoice === "free") {
-    // Check if Ollama is available
-    const ollamaAvailable = await isOllamaAvailable();
+  // Show provider info
+  console.log("\n");
+  note(
+    `${providerInfo.description}\n\nModels: ${providerInfo.models.join(", ")}\nPricing: ${providerInfo.pricing}\nSetup: ${providerInfo.setupUrl}`,
+    providerInfo.name
+  );
 
-    const freeProvider = await select({
-      message: "Select free provider:",
-      options: [
-        {
-          value: "ollama",
-          label: "Ollama (Local)",
-          hint: ollamaAvailable ? "✓ Running locally" : "⚠ Not detected",
-        },
-        {
-          value: "groq",
-          label: "Groq (Cloud)",
-          hint: "Fast, generous free tier",
-        },
-        {
-          value: "huggingface",
-          label: "Hugging Face Inference API",
-          hint: "Free tier available",
-        },
-      ],
+  // Get API key - check credentials.json first, then env vars, then prompt
+  let apiKey: string | null = null;
+  let keySource: "credentials" | "env" | "user" = "user";
+
+  // Check credentials.json
+  apiKey = await getAIKeyFromCredentials(provider);
+  if (apiKey) {
+    keySource = "credentials";
+    log.info(`Using saved API key: ${maskAPIKey(apiKey)}`);
+
+    const useExisting = await confirm({
+      message: "Use this saved API key?",
+      initialValue: true,
     });
 
-    if (isCancel(freeProvider)) return;
+    if (isCancel(useExisting)) return;
 
-    provider = freeProvider as string;
+    if (!useExisting) {
+      apiKey = null;
+    }
+  }
 
-    // Show provider info
-    const info = PROVIDER_INFO[provider as keyof typeof PROVIDER_INFO];
-    console.log("\n");
-    note(
-      `${info.description}\n\nSetup: ${info.setup}\nCost: ${info.cost}`,
-      `${info.name}`
-    );
+  // Check environment variables
+  if (!apiKey) {
+    apiKey = getAIKeyFromEnv(provider);
+    if (apiKey) {
+      keySource = "env";
+      const envVars = getEnvVarNames(provider);
+      log.info(`Using API key from environment variable: ${envVars[0]}`);
 
-    // Get API key if needed
-    if (provider !== "ollama") {
-      const apiKeyInput = await text({
-        message: `Enter your ${provider === "groq" ? "Groq" : "Hugging Face"} API key:`,
-        placeholder: provider === "groq" ? "gsk_..." : "hf_...",
-        validate: (value) => {
-          if (!value) return "API key is required";
-          if (value.length < 10) return "API key seems too short";
-        },
+      const useEnv = await confirm({
+        message: "Use this environment variable?",
+        initialValue: true,
       });
 
-      if (isCancel(apiKeyInput)) return;
-      apiKey = apiKeyInput as string;
-    } else {
-      // For Ollama, ask about custom endpoint
-      const useCustomEndpoint = await confirm({
-        message: "Use custom Ollama endpoint? (default: http://localhost:11434)",
-        initialValue: false,
-      });
+      if (isCancel(useEnv)) return;
 
-      if (!isCancel(useCustomEndpoint) && useCustomEndpoint) {
-        const endpointInput = await text({
-          message: "Enter Ollama endpoint:",
-          placeholder: "http://localhost:11434",
-        });
-
-        if (isCancel(endpointInput)) return;
-        customEndpoint = endpointInput as string;
+      if (!useEnv) {
+        apiKey = null;
       }
     }
-  } else {
-    // Paid providers
-    const paidProvider = await select({
-      message: "Select paid provider:",
-      options: [
-        { value: "anthropic", label: "Anthropic (Claude)" },
-        { value: "openai", label: "OpenAI (GPT-4)" },
-      ],
-    });
+  }
 
-    if (isCancel(paidProvider)) return;
-
-    provider = paidProvider as string;
-
-    const apiKeyInput = await text({
-      message: `Enter your ${provider === "anthropic" ? "Anthropic" : "OpenAI"} API key:`,
-      placeholder: provider === "anthropic" ? "sk-ant-..." : "sk-...",
+  // Prompt for API key if not found
+  if (!apiKey) {
+    const apiKeyInput = await password({
+      message: `Enter your ${providerInfo.name} API key:`,
       validate: (value) => {
         if (!value) return "API key is required";
-        if (value.length < 20) return "API key seems too short";
+        const validation = validateAPIKey(provider, value);
+        if (!validation.valid) return validation.error;
       },
     });
 
     if (isCancel(apiKeyInput)) return;
     apiKey = apiKeyInput as string;
+    keySource = "user";
+
+    // Offer to save the key
+    const saveKey = await confirm({
+      message: "Save this API key to ~/.config/orion/credentials.json?",
+      initialValue: true,
+    });
+
+    if (!isCancel(saveKey) && saveKey) {
+      await saveAIKeyToCredentials(provider, apiKey);
+      log.success("API key saved securely (file permissions: 0600)");
+    }
+  }
+
+  // Select model (optional)
+  const useDefaultModel = await confirm({
+    message: `Use default model (${getDefaultModel(provider)})?`,
+    initialValue: true,
+  });
+
+  if (isCancel(useDefaultModel)) return;
+
+  let model: string | undefined;
+  if (!useDefaultModel) {
+    const modelChoice = await select({
+      message: "Select model:",
+      options: providerInfo.models.map((m) => {
+        const isDefault = m === getDefaultModel(provider);
+        return {
+          value: m,
+          label: m,
+          ...(isDefault && { hint: "default" }),
+        };
+      }),
+    });
+
+    if (isCancel(modelChoice)) return;
+    model = modelChoice as string;
   }
 
   // Get preferences
@@ -303,13 +344,13 @@ export const handleAIConfigGeneration = async () => {
   s.message("Analyzing schema...");
   const analyzedSchema = analyzeSchema(schemaResult.schema);
 
-  s.message("Generating config with AI...");
+  s.message(`Generating config with ${providerInfo.name}...`);
 
   // Prepare AI config
   const aiConfig: AIProviderConfig = {
-    provider: provider as any,
-    apiKey,
-    endpoint: customEndpoint,
+    provider,
+    apiKey: apiKey!,
+    ...(model && { model }),
   };
 
   const customHintsValue = customHints as string | undefined;
@@ -378,10 +419,21 @@ export const handleAIConfigGeneration = async () => {
 export const handleBasicConfigGeneration = async () => {
   displayHeader("Schema > Generate Basic Config");
 
+  // Try to get endpoint from terraform state first
+  let defaultEndpoint = "";
+  if (terraformStateExists()) {
+    const tfEndpoint = await getGraphQLEndpointFromTerraform();
+    if (tfEndpoint) {
+      defaultEndpoint = tfEndpoint;
+      log.info(`Found endpoint from terraform state: ${tfEndpoint}`);
+    }
+  }
+
   // Get GraphQL endpoint
   const endpoint = await text({
     message: "Enter your GraphQL endpoint URL:",
-    placeholder: "https://api.example.com/graphql",
+    placeholder: defaultEndpoint || "https://api.example.com/graphql",
+    initialValue: defaultEndpoint,
     validate: (value) => {
       if (!value) return "Endpoint is required";
       try {
@@ -437,16 +489,16 @@ async function presentAndSaveConfig(
   note(configJson, description);
 
   // Ask to save
-  const saveConfig = await confirm({
+  const saveConfigChoice = await confirm({
     message: "Save this configuration?",
     initialValue: true,
   });
 
-  if (isCancel(saveConfig)) return;
+  if (isCancel(saveConfigChoice)) return;
 
-  if (saveConfig) {
+  if (saveConfigChoice) {
     writeConfig(configJson);
-    log.success("Configuration saved to ~/.orion/config.json");
+    log.success("Configuration saved to ~/.config/orion/config.json");
 
     const deployNow = await confirm({
       message: "Deploy the configuration now?",

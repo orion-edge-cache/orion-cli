@@ -26,10 +26,11 @@
     "@aws-sdk/client-sts": "^3.954.0",
     "@clack/prompts": "^0.11.0",
     "@orion/infra": "github:orion-edge-cache/orion-infra#main",
+    "@orion/schema": "github:orion-edge-cache/orion-schema#main",
+    "@orion/demo-tools": "github:orion-edge-cache/orion-demo-tools#main",
     "chalk": "^5.6.2",
     "configstore": "^7.1.0",
-    "dotenv": "^17.2.3",
-    "@orion/schema": "github:orion-edge-cache/orion-schema#main"
+    "dotenv": "^17.2.3"
   },
   "files": [
     "dist",
