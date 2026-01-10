@@ -4,6 +4,7 @@ import {
   deployInfrastructure,
   destroyInfrastructure,
   getTerraformOutputs,
+  cleanupAfterDestroy,
   ORION_CONFIG_DIR,
   BACKEND_URL_PATH,
   type DeployConfig,
@@ -220,11 +221,9 @@ export const handleDestroyDeployment = async (): Promise<boolean> => {
       s.stop("Infrastructure destroyed");
       destroyed = true;
 
-      // Clean up config directory
-      if (fs.existsSync(ORION_CONFIG_DIR)) {
-        fs.rmSync(ORION_CONFIG_DIR, { recursive: true, force: true });
-        log.info("Cleaned up ~/.config/orion");
-      }
+      // Clean up config directory (preserves deployment-config.json)
+      await cleanupAfterDestroy();
+      log.info("Cleaned up ~/.config/orion");
     } catch (error) {
       s.stop("Destroy failed");
 
