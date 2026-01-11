@@ -2,7 +2,7 @@ import { readFile } from "fs/promises";
 import { existsSync } from "fs";
 import path from "path";
 import os from "os";
-import { loadEnvFromFile, normalizeFastlyKeys } from "../../config/credentials-validator.js";
+import { loadEnvFromFile, normalizeFastlyKeys } from "../../config/env-loader.js";
 import type { SavedCredentials, CredentialSources, AWSCredentials, FastlyCredentials } from "./types.js";
 
 const ORION_CONFIG_DIR = path.join(os.homedir(), ".config/orion");
