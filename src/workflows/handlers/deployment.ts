@@ -5,6 +5,7 @@ import {
   destroyInfrastructure,
   getTerraformOutputs,
   cleanupAfterDestroy,
+  resetConfigToDefaults,
   ORION_CONFIG_DIR,
   BACKEND_URL_PATH,
   type DeployConfig,
@@ -28,7 +29,6 @@ import {
   checkCLIDependencies,
   type CLIDependencyStatus,
 } from "../../shared";
-import { ensureConfigExists } from "../../config";
 import { runCacheMenu } from "../menus/cache-menu";
 
 /**
@@ -107,8 +107,8 @@ export const handleCreateDeployment = async (): Promise<boolean> => {
       fs.mkdirSync(ORION_CONFIG_DIR, { recursive: true });
       fs.writeFileSync(BACKEND_URL_PATH, config.backend.graphqlUrl);
 
-      // Ensure config.json exists with defaults
-      ensureConfigExists();
+      // Reset config.json to defaults for fresh deployment
+      resetConfigToDefaults();
     } catch (error) {
       s.stop("Deployment failed");
 
